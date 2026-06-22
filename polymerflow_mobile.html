@@ -1,0 +1,3099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PolymerFlow - Vendor & Job Worker Stock Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+:root {
+    --bg-primary: #0b0f19;
+    --bg-secondary: #131a2e;
+    --bg-glass: rgba(19, 26, 46, 0.7);
+    --border-glass: rgba(255, 255, 255, 0.06);
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted: #4b5563;
+    
+    --color-primary: #6366f1;
+    --color-primary-hover: #4f46e5;
+    --color-success: #10b981;
+    --color-warning: #f59e0b;
+    --color-danger: #ef4444;
+    --color-indigo: #818cf8;
+    
+    --transition-fast: 0.2s ease;
+    --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --shadow-premium: 0 10px 40px -15px rgba(0, 0, 0, 0.6);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', 'Outfit', system-ui, -apple-system, sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    overflow-x: hidden;
+    line-height: 1.5;
+}
+
+.app-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar Navigation */
+.sidebar {
+    width: 260px;
+    background-color: #070a12;
+    border-right: 1px solid var(--border-glass);
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    flex-shrink: 0;
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 40px;
+}
+
+.logo-icon {
+    font-size: 28px;
+}
+
+.sidebar-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #a5b4fc, var(--color-primary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-grow: 1;
+}
+
+.nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: left;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.nav-btn:hover {
+    background-color: rgba(255, 255, 255, 0.04);
+    color: var(--text-primary);
+}
+
+.nav-btn.active {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(99, 102, 241, 0.05));
+    border-left: 3px solid var(--color-primary);
+    color: var(--text-primary);
+    font-weight: 600;
+    padding-left: 13px;
+}
+
+.sidebar-footer {
+    padding-top: 20px;
+    border-top: 1px solid var(--border-glass);
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.status-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-left: 4px;
+}
+
+.status-indicator.online {
+    background-color: var(--color-success);
+    box-shadow: 0 0 8px var(--color-success);
+}
+
+/* Main Content Area */
+.main-content {
+    flex-grow: 1;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    overflow-y: auto;
+    max-height: 100vh;
+}
+
+.main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-title h1 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
+}
+
+.text-muted {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.header-actions {
+    display: flex;
+    gap: 12px;
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: var(--transition-fast);
+}
+
+.btn-primary {
+    background-color: var(--color-primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--color-primary-hover);
+}
+
+.btn-secondary {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-glass);
+}
+
+.btn-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.btn-success {
+    background-color: var(--color-success);
+    color: white;
+}
+
+.btn-success:hover {
+    opacity: 0.9;
+}
+
+.btn-danger {
+    background-color: var(--color-danger);
+    color: white;
+}
+
+.btn-danger:hover {
+    opacity: 0.9;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+    border-radius: 6px;
+}
+
+/* Metrics Grid */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.metric-card {
+    border-radius: var(--radius-md);
+    padding: 24px;
+    border: 1px solid var(--border-glass);
+    background-color: var(--bg-glass);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-premium);
+}
+
+.metric-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.metric-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.metric-icon {
+    font-size: 20px;
+}
+
+.metric-value {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.text-indigo { color: var(--color-indigo); }
+.text-warning { color: var(--color-warning); }
+.text-success { color: var(--color-success); }
+.text-danger { color: var(--color-danger); }
+
+.metric-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* Glass panel */
+.glass {
+    background-color: var(--bg-glass);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border-glass);
+}
+
+/* Dashboard Layout */
+.dashboard-layout {
+    display: flex;
+    gap: 24px;
+}
+
+.flex-1 { flex: 1; }
+.flex-2 { flex: 2; }
+
+.layout-card {
+    border-radius: var(--radius-md);
+    padding: 24px;
+    box-shadow: var(--shadow-premium);
+}
+
+.layout-card h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Tables */
+.table-container {
+    overflow-x: auto;
+    width: 100%;
+}
+
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.custom-table th {
+    padding: 12px 16px;
+    border-bottom: 2px solid var(--border-glass);
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.custom-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-glass);
+    font-size: 14px;
+}
+
+.custom-table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* Action icons inside tables */
+.btn-delete-row {
+    background: transparent;
+    border: none;
+    color: var(--color-danger);
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: var(--transition-fast);
+}
+
+.btn-delete-row:hover {
+    background-color: rgba(239, 68, 68, 0.1);
+}
+
+.btn-edit-row {
+    background: transparent;
+    border: none;
+    color: var(--color-indigo);
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: var(--transition-fast);
+    margin-right: 6px;
+}
+
+.btn-edit-row:hover {
+    background-color: rgba(129, 140, 248, 0.1);
+}
+
+/* Recent Movements Ledger */
+.ledger-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 380px;
+    overflow-y: auto;
+}
+
+.ledger-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    border-radius: var(--radius-sm);
+    background-color: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-glass);
+}
+
+.ledger-item-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ledger-badge {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.ledger-badge.inward {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: var(--color-success);
+}
+
+.ledger-badge.outward {
+    background-color: rgba(99, 102, 241, 0.1);
+    color: var(--color-primary);
+}
+
+.ledger-badge.consume {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: var(--color-warning);
+}
+
+.ledger-badge.return {
+    background-color: rgba(129, 140, 248, 0.1);
+    color: var(--color-indigo);
+}
+
+.ledger-details h4 {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.ledger-details p {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.ledger-item-right {
+    text-align: right;
+}
+
+.ledger-qty {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+/* Tabs Panel visibility toggles */
+.tab-panel {
+    display: none;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.tab-panel.active {
+    display: flex;
+}
+
+/* Control Panel */
+.control-panel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-premium);
+}
+
+.search-box input {
+    background-color: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-glass);
+    color: white;
+    padding: 10px 16px;
+    border-radius: var(--radius-sm);
+    width: 300px;
+    font-family: inherit;
+    font-size: 13px;
+}
+
+.search-box input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+/* Manage Tab Grid */
+.manage-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+}
+
+.entity-form {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.entity-form .form-group {
+    flex-grow: 1;
+    margin-bottom: 0;
+}
+
+.entity-list {
+    list-style: none;
+    max-height: 240px;
+    overflow-y: auto;
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-sm);
+    background-color: rgba(0, 0, 0, 0.15);
+}
+
+.entity-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border-glass);
+    font-size: 13px;
+}
+
+.entity-list li:last-child {
+    border-bottom: none;
+}
+
+/* Backup and Operations */
+.backup-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Forms Styling */
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+}
+
+.form-control {
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--border-glass);
+    color: white;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.inline-form {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 0;
+}
+
+.inline-form label {
+    margin-bottom: 0;
+    white-space: nowrap;
+}
+
+.worker-selection-panel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-premium);
+}
+
+.worker-actions {
+    display: flex;
+    gap: 12px;
+}
+
+/* Worker balance listing */
+.worker-stocks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.worker-stock-item {
+    padding: 16px;
+    border-radius: var(--radius-sm);
+    background-color: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-glass);
+}
+
+.worker-stock-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.worker-stock-poly {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.worker-stock-val {
+    font-weight: 700;
+    color: var(--color-warning);
+}
+
+/* Progress bar inside stock indicators */
+.progress-bar-bg {
+    height: 6px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-indigo));
+    border-radius: 3px;
+}
+
+/* Modal Styling */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(3, 7, 18, 0.6);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+.modal-box {
+    width: 100%;
+    max-width: 480px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-premium);
+    overflow: hidden;
+    animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalFadeIn {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-glass);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.modal-close {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.modal-close:hover {
+    color: white;
+}
+
+#form-inward, #form-outward, #form-consumption, #form-return {
+    padding: 24px;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.input-hint {
+    display: block;
+    font-size: 11px;
+    color: var(--color-indigo);
+    margin-top: 4px;
+}
+
+/* Navigation for Mobile */
+.bottom-nav {
+    display: none;
+}
+
+/* RESPONSIVE MEDIA QUERIES */
+
+@media (max-width: 1024px) {
+    .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .dashboard-layout {
+        flex-direction: column;
+    }
+    
+    .manage-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 767px) {
+    .app-container {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        display: none; /* Hide desktop sidebar */
+    }
+    
+    .bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100vw;
+        height: 64px;
+        background-color: #070a12;
+        border-top: 1px solid var(--border-glass);
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
+        z-index: 999;
+        justify-content: space-around;
+        align-items: center;
+    }
+    
+    .bottom-nav-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-secondary);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        font-family: inherit;
+        font-size: 10px;
+        cursor: pointer;
+        flex: 1;
+        padding: 8px 0;
+    }
+    
+    .bottom-nav-btn.active {
+        color: var(--color-primary);
+        font-weight: 600;
+    }
+    
+    .bottom-icon {
+        font-size: 18px;
+    }
+    
+    .main-content {
+        padding: 20px 16px 84px 16px; /* space for bottom nav */
+        gap: 20px;
+        max-height: calc(100vh - 64px);
+    }
+    
+    .main-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .header-actions {
+        width: 100%;
+    }
+    
+    .header-actions .btn {
+        flex: 1;
+    }
+    
+    .metrics-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .control-panel {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+    }
+    
+    .search-box input {
+        width: 100%;
+    }
+    
+    .worker-selection-panel {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+    }
+    
+    .worker-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    /* Convert tables to cards on very small screens for mobile responsiveness */
+    .custom-table thead {
+        display: none;
+    }
+    
+    .custom-table, .custom-table tbody, .custom-table tr, .custom-table td {
+        display: block;
+        width: 100%;
+    }
+    
+    .custom-table tr {
+        margin-bottom: 16px;
+        border-radius: var(--radius-sm);
+        background-color: rgba(255,255,255,0.01);
+        border: 1px solid var(--border-glass);
+        padding: 8px;
+    }
+    
+    .custom-table td {
+        text-align: right;
+        padding: 8px 12px;
+        border-bottom: 1px solid rgba(255,255,255,0.02);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .custom-table td:last-child {
+        border-bottom: none;
+    }
+    
+    .custom-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--text-secondary);
+        font-size: 12px;
+        text-align: left;
+    }
+}
+
+</style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation (Desktop) -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-icon">🌀</div>
+                <h2>PolymerFlow</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-btn active" data-tab="dashboard">
+                    <span class="btn-icon">📊</span> Dashboard
+                </button>
+                <button class="nav-btn" data-tab="inward">
+                    <span class="btn-icon">📥</span> Buy (Inward)
+                </button>
+                <button class="nav-btn" data-tab="outward">
+                    <span class="btn-icon">📤</span> Send (Outward)
+                </button>
+                <button class="nav-btn" data-tab="workers">
+                    <span class="btn-icon">🏭</span> Job Workers
+                </button>
+                <button class="nav-btn" data-tab="manage">
+                    <span class="btn-icon">⚙️</span> Manage
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <p>Status: <span class="status-indicator online"></span> Local Mode</p>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="main-header">
+                <div class="header-title">
+                    <h1 id="page-title">Dashboard Overview</h1>
+                    <p id="page-subtitle" class="text-muted">Real-time balances of warehouse stock and job worker custody.</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-primary" id="btn-quick-inward">+ Log Purchase</button>
+                    <button class="btn btn-secondary" id="btn-quick-outward">→ Dispatch Stock</button>
+                </div>
+            </header>
+
+            <!-- Dynamic Tab Content -->
+            <div class="tab-content-container">
+                <!-- Dashboard Tab -->
+                <section id="tab-dashboard" class="tab-panel active">
+                    <!-- Metric Cards -->
+                    <div class="metrics-grid">
+                        <div class="metric-card glass" id="card-warehouse" style="cursor: pointer; transition: transform var(--transition-fast);" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                            <div class="metric-header">
+                                <span class="metric-label">Warehouse Stock</span>
+                                <span class="metric-icon">🏢</span>
+                            </div>
+                            <h3 class="metric-value text-indigo" id="metric-warehouse-stock">0 kg</h3>
+                            <p class="metric-desc">Total polymer physical stock (Click for details)</p>
+                        </div>
+                        <div class="metric-card glass" id="card-jobworker" style="cursor: pointer; transition: transform var(--transition-fast);" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                            <div class="metric-header">
+                                <span class="metric-label">Job Worker Custody</span>
+                                <span class="metric-icon">🏭</span>
+                            </div>
+                            <h3 class="metric-value text-warning" id="metric-jobworker-stock">0 kg</h3>
+                            <p class="metric-desc">Material currently processed outside (Click for details)</p>
+                        </div>
+                        <div class="metric-card glass" id="card-vendors" style="cursor: pointer; transition: transform var(--transition-fast);" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                            <div class="metric-header">
+                                <span class="metric-label">Active Vendors</span>
+                                <span class="metric-icon">🤝</span>
+                            </div>
+                            <h3 class="metric-value text-success" id="metric-vendors-count">0</h3>
+                            <p class="metric-desc">Registered suppliers (Click for details)</p>
+                        </div>
+                        <div class="metric-card glass" id="card-workers" style="cursor: pointer; transition: transform var(--transition-fast);" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                            <div class="metric-header">
+                                <span class="metric-label">Job Workers</span>
+                                <span class="metric-icon">🔧</span>
+                            </div>
+                            <h3 class="metric-value text-danger" id="metric-workers-count">0</h3>
+                            <p class="metric-desc">Active external processors (Click for details)</p>
+                        </div>
+                    </div>
+
+                    <!-- Polymer wise breakdown grid & recent transactions -->
+                    <div class="dashboard-layout">
+                        <!-- Breakdown -->
+                        <div class="layout-card glass flex-2">
+                            <div class="card-header-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+                                <h3 style="margin-bottom: 0;">🧪 Polymer Stock Summary</h3>
+                                <div class="date-filter-group" style="display: flex; gap: 8px; align-items: center;">
+                                    <label for="price-period-select" style="font-size: 11px; font-weight: 600; color: var(--text-secondary); margin-bottom: 0;">Avg Price Period:</label>
+                                    <select id="price-period-select" class="form-control" style="width: 140px; padding: 6px 12px; font-size: 12px; background-color: rgba(0,0,0,0.3);">
+                                        <option value="this-month" selected>This Month</option>
+                                        <option value="last-30">Last 30 Days</option>
+                                        <option value="all-time">All Time</option>
+                                        <option value="custom">Custom Period</option>
+                                    </select>
+                                    <div id="custom-date-inputs" style="display: none; gap: 6px; align-items: center;">
+                                        <input type="date" id="price-from-date" class="form-control" style="padding: 4px 8px; font-size: 12px; width: 120px;">
+                                        <span style="font-size: 12px;">to</span>
+                                        <input type="date" id="price-to-date" class="form-control" style="padding: 4px 8px; font-size: 12px; width: 120px;">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="table-container">
+                                <table class="custom-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Polymer Type</th>
+                                            <th>Warehouse (kg)</th>
+                                            <th>Job Workers (kg)</th>
+                                            <th>Avg Purchase (₹/kg)</th>
+                                            <th>Ratio</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="polymer-summary-table-body">
+                                        <!-- Dynamic rows -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Recent ledger activity -->
+                        <div class="layout-card glass flex-1">
+                            <h3>📝 Recent Movements</h3>
+                            <div class="ledger-list" id="recent-ledger-list">
+                                <!-- Dynamic transactions -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Outstanding payments section -->
+                    <div class="dashboard-layout" style="margin-top: 24px;">
+                        <div class="layout-card glass flex-1">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+                                <h3 style="margin-bottom: 0;">💳 Outstanding Vendor Payments</h3>
+                                <button class="btn btn-secondary btn-sm" id="btn-sort-payments" style="padding: 6px 12px; font-size: 12px; background-color: rgba(0,0,0,0.3); border: 1px solid var(--border-glass);">Sort: Urgent First 🔽</button>
+                            </div>
+                            <div class="table-container">
+                                <table class="custom-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Invoice No</th>
+                                            <th>Vendor</th>
+                                            <th>Amount</th>
+                                            <th>Due Date</th>
+                                            <th>Days Left</th>
+                                            <th>Status</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="outstanding-payments-body">
+                                        <!-- Dynamic pending bills -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Inward Tab -->
+                <section id="tab-inward" class="tab-panel">
+                    <div class="control-panel glass" style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                        <div class="search-box" style="flex-grow: 1; min-width: 200px;">
+                            <input type="text" id="search-inward" placeholder="Search invoices, vendors, polymers, brand..." style="width: 100%;">
+                        </div>
+                        <div class="filter-box">
+                            <select id="filter-inward-partner" class="form-control" style="width: 200px; background-color: rgba(0,0,0,0.3); font-size: 13px;">
+                                <option value="all">🔍 All Vendors & Workers</option>
+                                <!-- Dynamic vendor & worker option groups loaded in app.js -->
+                            </select>
+                        </div>
+                        <div class="date-filter-box" style="display: flex; gap: 6px; align-items: center;">
+                            <input type="date" id="filter-inward-from" class="form-control" style="width: 130px; font-size: 12px; padding: 6px; background-color: rgba(0,0,0,0.3);">
+                            <span style="font-size: 12px; color: var(--text-secondary);">to</span>
+                            <input type="date" id="filter-inward-to" class="form-control" style="width: 130px; font-size: 12px; padding: 6px; background-color: rgba(0,0,0,0.3);">
+                        </div>
+                        <button class="btn btn-primary" id="btn-add-inward">+ Record Purchase (Inward)</button>
+                    </div>
+
+                    <div class="layout-card glass">
+                        <div class="table-container">
+                            <table class="custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Invoice No</th>
+                                        <th>Vendor</th>
+                                        <th>Polymer Type</th>
+                                        <th>Brand</th>
+                                        <th>Quantity (kg)</th>
+                                        <th>Rate (₹/kg)</th>
+                                        <th>Total Value</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="inward-table-body">
+                                    <!-- Dynamic rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Outward Tab -->
+                <section id="tab-outward" class="tab-panel">
+                    <div class="control-panel glass">
+                        <div class="search-box">
+                            <input type="text" id="search-outward" placeholder="Search challans, workers, polymers, vehicles...">
+                        </div>
+                        <button class="btn btn-secondary" id="btn-add-outward">→ Dispatch to Job Worker</button>
+                    </div>
+
+                    <div class="layout-card glass">
+                        <div class="table-container">
+                            <table class="custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Challan No</th>
+                                        <th>Job Worker</th>
+                                        <th>Polymer Type</th>
+                                        <th>Quantity (kg)</th>
+                                        <th>Vehicle No</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="outward-table-body">
+                                    <!-- Dynamic rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Job Workers Tab -->
+                <section id="tab-workers" class="tab-panel">
+                    <div class="worker-selection-panel glass">
+                        <div class="form-group inline-form">
+                            <label for="worker-select-filter">Select Job Worker Ledger:</label>
+                            <select id="worker-select-filter" class="form-control">
+                                <!-- Dynamic workers -->
+                            </select>
+                        </div>
+                        <div class="worker-actions">
+                            <button class="btn btn-success" id="btn-log-consumption">⚖️ Log Consumption</button>
+                            <button class="btn btn-primary" id="btn-log-return">🔄 Log Return to Warehouse</button>
+                        </div>
+                    </div>
+
+                    <!-- Worker Stocks -->
+                    <div class="dashboard-layout">
+                        <div class="layout-card glass flex-1">
+                            <h3>📦 Custody Inventory Balance</h3>
+                            <div class="worker-stocks-list" id="worker-stocks-list">
+                                <!-- Dynamic listing of polymers and current weights for selected job worker -->
+                            </div>
+                        </div>
+
+                        <!-- Worker History -->
+                        <div class="layout-card glass flex-2">
+                            <h3>📜 Job Worker Ledger Book</h3>
+                            <div class="table-container">
+                                <table class="custom-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Type</th>
+                                            <th>Polymer Type</th>
+                                            <th>Qty In (Sent)</th>
+                                            <th>Qty Out (Used/Returned)</th>
+                                            <th>Challan/Note</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="worker-ledger-body">
+                                        <!-- Dynamic entries -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Manage Tab -->
+                <section id="tab-manage" class="tab-panel">
+                    <div class="manage-grid">
+                        <!-- Vendors card -->
+                        <div class="layout-card glass">
+                            <h3 id="vendor-form-title">🤝 Add Vendor</h3>
+                            <form id="form-add-vendor" class="entity-form" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
+                                <input type="hidden" id="vendor-edit-id">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <input type="text" id="new-vendor-name" class="form-control" placeholder="Vendor Name" required>
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <input type="number" id="new-vendor-credit" class="form-control" placeholder="Credit Period (Days, optional)" min="0">
+                                </div>
+                                <div class="form-actions" style="display: flex; gap: 8px;">
+                                    <button type="submit" id="btn-vendor-submit" class="btn btn-primary btn-sm" style="flex: 1; padding: 8px;">Add Vendor</button>
+                                    <button type="button" id="btn-vendor-cancel" class="btn btn-secondary btn-sm" style="display: none; flex: 1; padding: 8px;">Cancel</button>
+                                </div>
+                            </form>
+                            <ul class="entity-list" id="vendor-list">
+                                <!-- Dynamic Vendors -->
+                            </ul>
+                        </div>
+
+                        <!-- Job Workers card -->
+                        <div class="layout-card glass">
+                            <h3 id="worker-form-title">🔧 Add Job Worker</h3>
+                            <form id="form-add-worker" class="entity-form" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
+                                <input type="hidden" id="worker-edit-id">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <input type="text" id="new-worker-name" class="form-control" placeholder="Job Worker Name" required>
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <input type="text" id="new-worker-address" class="form-control" placeholder="Delivery Address" required>
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <input type="text" id="new-worker-mobile" class="form-control" placeholder="Mobile Number" required>
+                                </div>
+                                <div class="form-actions" style="display: flex; gap: 8px;">
+                                    <button type="submit" id="btn-worker-submit" class="btn btn-primary btn-sm" style="flex: 1; padding: 8px;">Add Job Worker</button>
+                                    <button type="button" id="btn-worker-cancel" class="btn btn-secondary btn-sm" style="display: none; flex: 1; padding: 8px;">Cancel</button>
+                                </div>
+                            </form>
+                            <ul class="entity-list" id="worker-list">
+                                <!-- Dynamic Job Workers -->
+                            </ul>
+                        </div>
+
+                        <!-- Polymers Card -->
+                        <div class="layout-card glass">
+                            <h3 id="polymer-form-title">🧪 Add Polymer</h3>
+                            <form id="form-add-polymer" class="entity-form" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
+                                <input type="hidden" id="polymer-edit-old-name">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <input type="text" id="new-polymer-name" class="form-control" placeholder="e.g., HDPE, PP, Nylon 6" required>
+                                </div>
+                                <div class="form-actions" style="display: flex; gap: 8px;">
+                                    <button type="submit" id="btn-polymer-submit" class="btn btn-primary btn-sm" style="flex: 1; padding: 8px;">Add Polymer</button>
+                                    <button type="button" id="btn-polymer-cancel" class="btn btn-secondary btn-sm" style="display: none; flex: 1; padding: 8px;">Cancel</button>
+                                </div>
+                            </form>
+                            <ul class="entity-list" id="polymer-list">
+                                <!-- Dynamic Polymers -->
+                            </ul>
+                        </div>
+
+                        <!-- Data backup card -->
+                        <div class="layout-card glass">
+                            <h3>💾 Backup & Operations</h3>
+                            <p class="text-muted" style="font-size: 13px; margin-bottom: 16px;">
+                                Export or import all ledger balances. Useful for backups, Excel analysis, or migration.
+                            </p>
+                            <div class="backup-buttons">
+                                <button class="btn btn-secondary btn-sm" id="btn-export-csv">📥 Export Transactions (CSV)</button>
+                                <button class="btn btn-secondary btn-sm" id="btn-export-backup">💾 Export All Database (JSON)</button>
+                                <button class="btn btn-danger btn-sm" id="btn-reset-data">⚠️ Clear Database to Clean Slate</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+
+    <!-- Log Purchase Modal (Inward) -->
+    <div class="modal-overlay" id="modal-inward">
+        <div class="modal-box glass">
+            <div class="modal-header">
+                <h2 id="modal-inward-title">📥 Log Inward Purchase</h2>
+                <button class="modal-close" onclick="closeModal('modal-inward')">&times;</button>
+            </div>
+            <form id="form-inward">
+                <input type="hidden" id="inward-edit-id">
+                <div class="form-group">
+                    <label for="inward-date">Date</label>
+                    <input type="date" id="inward-date" class="form-control" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="inward-invoice">Invoice Number</label>
+                        <input type="text" id="inward-invoice" class="form-control" placeholder="INV-2026-001 (Optional)">
+                    </div>
+                    <div class="form-group">
+                        <label for="inward-brand">Brand / Remark</label>
+                        <input type="text" id="inward-brand" class="form-control" placeholder="e.g. Reliance Repol">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="inward-vendor">Vendor</label>
+                    <select id="inward-vendor" class="form-control" required>
+                        <!-- Dynamic vendors -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="inward-polymer">Polymer Type</label>
+                    <select id="inward-polymer" class="form-control" required>
+                        <!-- Dynamic polymers -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="inward-deliver-to">Deliver To / Destination</label>
+                    <select id="inward-deliver-to" class="form-control" required>
+                        <option value="warehouse">🏢 Warehouse (Internal Stock)</option>
+                        <!-- Dynamic job workers will be appended here in app.js -->
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="inward-qty">Quantity (kg)</label>
+                        <input type="number" id="inward-qty" class="form-control" min="1" step="any" placeholder="e.g. 500" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="inward-rate">Rate (₹/kg)</label>
+                        <input type="number" id="inward-rate" class="form-control" min="0" step="any" placeholder="e.g. 90">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('modal-inward')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Log</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Log Dispatch Modal (Outward) -->
+    <div class="modal-overlay" id="modal-outward">
+        <div class="modal-box glass">
+            <div class="modal-header">
+                <h2>📤 Dispatch Polymer to Worker</h2>
+                <button class="modal-close" onclick="closeModal('modal-outward')">&times;</button>
+            </div>
+            <form id="form-outward">
+                <div class="form-group">
+                    <label for="outward-date">Date</label>
+                    <input type="date" id="outward-date" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="outward-challan">Challan / Gate Pass No</label>
+                    <input type="text" id="outward-challan" class="form-control" placeholder="CH-2026-001" required>
+                </div>
+                <div class="form-group">
+                    <label for="outward-worker">Job Worker</label>
+                    <select id="outward-worker" class="form-control" required>
+                        <!-- Dynamic workers -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="outward-polymer">Polymer Type</label>
+                    <select id="outward-polymer" class="form-control" required>
+                        <!-- Dynamic polymers -->
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="outward-qty">Quantity (kg)</label>
+                        <input type="number" id="outward-qty" class="form-control" min="1" step="any" placeholder="Max available" required>
+                        <span id="warehouse-available-hint" class="input-hint"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="outward-vehicle">Vehicle / LR No</label>
+                        <input type="text" id="outward-vehicle" class="form-control" placeholder="MH-12-AB-3456">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('modal-outward')">Cancel</button>
+                    <button type="submit" class="btn btn-secondary">Dispatch Stock</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Job Worker Consumption Modal -->
+    <div class="modal-overlay" id="modal-consumption">
+        <div class="modal-box glass">
+            <div class="modal-header">
+                <h2>⚖️ Log Job Worker Consumption</h2>
+                <button class="modal-close" onclick="closeModal('modal-consumption')">&times;</button>
+            </div>
+            <form id="form-consumption">
+                <input type="hidden" id="consumption-worker-id">
+                <div class="form-group">
+                    <label for="consumption-worker-display">Job Worker</label>
+                    <input type="text" id="consumption-worker-display" class="form-control" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="consumption-date">Consumption Date</label>
+                    <input type="date" id="consumption-date" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="consumption-polymer">Polymer Used</label>
+                    <select id="consumption-polymer" class="form-control" required>
+                        <!-- Dynamic based on selected worker's inventory -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="consumption-qty">Quantity Consumed (kg)</label>
+                    <input type="number" id="consumption-qty" class="form-control" min="1" step="any" placeholder="e.g. 200" required>
+                    <span id="worker-available-hint" class="input-hint"></span>
+                </div>
+                <div class="form-group">
+                    <label for="consumption-note">Report Note / Product Details</label>
+                    <input type="text" id="consumption-note" class="form-control" placeholder="e.g., Used for molding container cap">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('modal-consumption')">Cancel</button>
+                    <button type="submit" class="btn btn-success">Record Consumption</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Job Worker Return Modal -->
+    <div class="modal-overlay" id="modal-return">
+        <div class="modal-box glass">
+            <div class="modal-header">
+                <h2>🔄 Return Stock to Warehouse</h2>
+                <button class="modal-close" onclick="closeModal('modal-return')">&times;</button>
+            </div>
+            <form id="form-return">
+                <input type="hidden" id="return-worker-id">
+                <div class="form-group">
+                    <label for="return-worker-display">Job Worker</label>
+                    <input type="text" id="return-worker-display" class="form-control" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="return-date">Return Date</label>
+                    <input type="date" id="return-date" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="return-polymer">Polymer to Return</label>
+                    <select id="return-polymer" class="form-control" required>
+                        <!-- Dynamic based on selected worker's inventory -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="return-qty">Quantity Returned (kg)</label>
+                    <input type="number" id="return-qty" class="form-control" min="1" step="any" placeholder="e.g. 100" required>
+                    <span id="worker-return-available-hint" class="input-hint"></span>
+                </div>
+                <div class="form-group">
+                    <label for="return-note">Note / Gate Pass No</label>
+                    <input type="text" id="return-note" class="form-control" placeholder="e.g., Return leftover virgin resin">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('modal-return')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Return to Warehouse</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Explainer Modal -->
+    <div class="modal-overlay" id="modal-explainer">
+        <div class="modal-box glass">
+            <div class="modal-header">
+                <h2 id="explainer-title">Dashboard Information</h2>
+                <button class="modal-close" onclick="closeModal('modal-explainer')">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 24px;">
+                <p id="explainer-desc" class="text-muted" style="margin-bottom: 20px; font-size: 14px; line-height: 1.6;"></p>
+                <div id="explainer-breakdown" style="max-height: 240px; overflow-y: auto;">
+                    <!-- Dynamic breakdown items will go here -->
+                </div>
+            </div>
+            <div class="modal-footer" style="padding: 16px 24px; background-color: rgba(0, 0, 0, 0.15);">
+                <button class="btn btn-secondary" onclick="closeModal('modal-explainer')">Close Details</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Bottom Navigation Bar -->
+    <nav class="bottom-nav">
+        <button class="bottom-nav-btn active" data-tab="dashboard">
+            <span class="bottom-icon">📊</span>
+            <span>Dashboard</span>
+        </button>
+        <button class="bottom-nav-btn" data-tab="inward">
+            <span class="bottom-icon">📥</span>
+            <span>Buy</span>
+        </button>
+        <button class="bottom-nav-btn" data-tab="outward">
+            <span class="bottom-icon">📤</span>
+            <span>Send</span>
+        </button>
+        <button class="bottom-nav-btn" data-tab="workers">
+            <span class="bottom-icon">🏭</span>
+            <span>Workers</span>
+        </button>
+        <button class="bottom-nav-btn" data-tab="manage">
+            <span class="bottom-icon">⚙️</span>
+            <span>Manage</span>
+        </button>
+    </nav>
+
+    <script>
+// PolymerFlow Tracker Logic
+
+// --- Initialization & Local Database Setup ---
+const DEFAULT_POLYMERS = ["HDPE", "PP", "Nylon 6", "Process PP", "GPPS"];
+const DEFAULT_VENDORS = [];
+const DEFAULT_WORKERS = [];
+const DEFAULT_TRANSACTIONS = [];
+
+
+let db = {
+    polymers: [],
+    vendors: [],
+    jobWorkers: [],
+    transactions: []
+};
+
+// Load database from localStorage or load default dataset
+function loadDatabase() {
+    const savedData = localStorage.getItem("polymer_flow_db");
+    if (savedData) {
+        try {
+            db = JSON.parse(savedData);
+            // If the database has old mock data (e.g. mock vendors/workers), clear it
+            if (db.vendors && db.vendors.some(v => v.id === "v1")) {
+                resetToDefaultDataset();
+            }
+        } catch (e) {
+            console.error("Failed to parse local storage database, resetting", e);
+            resetToDefaultDataset();
+        }
+    } else {
+        resetToDefaultDataset();
+    }
+}
+
+function saveDatabase() {
+    localStorage.setItem("polymer_flow_db", JSON.stringify(db));
+}
+
+function resetToDefaultDataset() {
+    db.polymers = [...DEFAULT_POLYMERS];
+    db.vendors = [...DEFAULT_VENDORS];
+    db.jobWorkers = [...DEFAULT_WORKERS];
+    db.transactions = [...DEFAULT_TRANSACTIONS];
+    saveDatabase();
+}
+
+// --- Stock Balance Calculus Engine ---
+
+// Returns warehouse stock balance per polymer
+function getWarehouseBalances() {
+    const balances = {};
+    db.polymers.forEach(p => balances[p] = 0);
+    
+    db.transactions.forEach(tx => {
+        if (!balances.hasOwnProperty(tx.polymer)) {
+            balances[tx.polymer] = 0;
+        }
+        if (tx.type === "inward") {
+            // Only add to warehouse if delivered directly to warehouse
+            if (!tx.deliveredTo || tx.deliveredTo === "warehouse") {
+                balances[tx.polymer] += tx.quantity;
+            }
+        } else if (tx.type === "outward") {
+            balances[tx.polymer] -= tx.quantity;
+        } else if (tx.type === "return") {
+            balances[tx.polymer] += tx.quantity;
+        }
+    });
+    return balances;
+}
+
+// Returns stock custody balance per job worker, per polymer
+function getJobWorkerBalances(workerId) {
+    const balances = {};
+    db.polymers.forEach(p => balances[p] = 0);
+
+    db.transactions.forEach(tx => {
+        if (!balances.hasOwnProperty(tx.polymer)) {
+            balances[tx.polymer] = 0;
+        }
+        
+        // Stock increases at worker if dispatched to them, OR bought and directly delivered to them
+        if (tx.type === "outward" && tx.entityId === workerId) {
+            balances[tx.polymer] += tx.quantity;
+        } else if (tx.type === "inward" && tx.deliveredTo === workerId) {
+            balances[tx.polymer] += tx.quantity;
+        }
+        
+        // Stock decreases at worker if consumed or returned
+        if (tx.entityId === workerId) {
+            if (tx.type === "consume") {
+                balances[tx.polymer] -= tx.quantity;
+            } else if (tx.type === "return") {
+                balances[tx.polymer] -= tx.quantity;
+            }
+        }
+    });
+    return balances;
+}
+
+// Returns overall stock held by all job workers grouped by polymer
+function getAllJobWorkerBalances() {
+    const balances = {};
+    db.polymers.forEach(p => balances[p] = 0);
+
+    db.transactions.forEach(tx => {
+        if (tx.type === "outward") {
+            balances[tx.polymer] = (balances[tx.polymer] || 0) + tx.quantity;
+        } else if (tx.type === "inward" && tx.deliveredTo && tx.deliveredTo !== "warehouse") {
+            balances[tx.polymer] = (balances[tx.polymer] || 0) + tx.quantity;
+        } else if (tx.type === "consume" || tx.type === "return") {
+            balances[tx.polymer] = (balances[tx.polymer] || 0) - tx.quantity;
+        }
+    });
+    return balances;
+}
+
+// Helper to get entity name by ID
+function getEntityName(id, type) {
+    if (type === "vendor" || type === "inward") {
+        const v = db.vendors.find(item => item.id === id);
+        return v ? v.name : "Unknown Vendor";
+    } else {
+        const w = db.jobWorkers.find(item => item.id === id);
+        return w ? w.name : "Unknown Job Worker";
+    }
+}
+
+// --- Render Operations ---
+
+function renderAll() {
+    renderDashboard();
+    renderInwardTab();
+    renderOutwardTab();
+    renderWorkersTab();
+    renderManageTab();
+    populateSelectDropdowns();
+}
+
+let paymentsSortOrder = "asc";
+
+function renderDashboard() {
+    const warehouseBals = getWarehouseBalances();
+    const jwBals = getAllJobWorkerBalances();
+    
+    // Sum weights
+    let totalWarehouse = Object.values(warehouseBals).reduce((a, b) => a + b, 0);
+    let totalJW = Object.values(jwBals).reduce((a, b) => a + b, 0);
+
+    document.getElementById("metric-warehouse-stock").innerText = `${totalWarehouse.toLocaleString()} kg`;
+    document.getElementById("metric-jobworker-stock").innerText = `${totalJW.toLocaleString()} kg`;
+    document.getElementById("metric-vendors-count").innerText = db.vendors.length;
+    document.getElementById("metric-workers-count").innerText = db.jobWorkers.length;
+
+    // Date Range Calculations for Average Price
+    const today = new Date();
+    let startDate = null;
+    let endDate = null;
+    const periodSelect = document.getElementById("price-period-select");
+    const period = periodSelect ? periodSelect.value : "this-month";
+
+    if (period === "this-month") {
+        const y = today.getFullYear();
+        const m = String(today.getMonth() + 1).padStart(2, '0');
+        startDate = `${y}-${m}-01`;
+    } else if (period === "last-30") {
+        const pastDate = new Date();
+        pastDate.setDate(today.getDate() - 30);
+        startDate = pastDate.toISOString().split("T")[0];
+    } else if (period === "custom") {
+        startDate = document.getElementById("price-from-date").value || null;
+        endDate = document.getElementById("price-to-date").value || null;
+    }
+
+    // Polymer breakdown table
+    const tableBody = document.getElementById("polymer-summary-table-body");
+    tableBody.innerHTML = "";
+
+    let maxWeight = 0;
+    db.polymers.forEach(p => {
+        const w = warehouseBals[p] || 0;
+        const j = jwBals[p] || 0;
+        const total = w + j;
+        if (total > maxWeight) maxWeight = total;
+    });
+
+    db.polymers.forEach(polymer => {
+        const wStock = warehouseBals[polymer] || 0;
+        const jStock = jwBals[polymer] || 0;
+        const total = wStock + jStock;
+        const pct = maxWeight > 0 ? (total / maxWeight) * 100 : 0;
+
+        // Calculate Average Price in Selected Date Range
+        let totalCost = 0;
+        let purchaseQty = 0;
+        db.transactions.forEach(tx => {
+            if (tx.type === "inward" && tx.polymer === polymer && tx.rate !== null && tx.quantity > 0) {
+                // Apply date filters
+                if (startDate && tx.date < startDate) return;
+                if (endDate && tx.date > endDate) return;
+
+                totalCost += tx.quantity * tx.rate;
+                purchaseQty += tx.quantity;
+            }
+        });
+
+        const avgPrice = purchaseQty > 0 ? (totalCost / purchaseQty) : null;
+        const avgPriceDisplay = avgPrice !== null ? `₹${avgPrice.toFixed(2)}` : "-";
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td data-label="Polymer Type"><strong>${polymer}</strong></td>
+            <td data-label="Warehouse (kg)">${wStock.toLocaleString()} kg</td>
+            <td data-label="Job Workers (kg)">${jStock.toLocaleString()} kg</td>
+            <td data-label="Avg Purchase (₹/kg)"><strong>${avgPriceDisplay}</strong></td>
+            <td data-label="Ratio">
+                <div class="progress-bar-bg" style="width: 80px;">
+                    <div class="progress-bar-fill" style="width: ${pct}%;"></div>
+                </div>
+            </td>
+        `;
+        tableBody.appendChild(tr);
+    });
+
+    // Recent movements ledger
+    const ledgerContainer = document.getElementById("recent-ledger-list");
+    ledgerContainer.innerHTML = "";
+
+    // Show top 6 sorted by date descending, then ID descending
+    const sortedTx = [...db.transactions].sort((a, b) => {
+        const diff = new Date(b.date) - new Date(a.date);
+        return diff !== 0 ? diff : b.id.localeCompare(a.id);
+    }).slice(0, 6);
+
+    if (sortedTx.length === 0) {
+        ledgerContainer.innerHTML = `<p class="text-muted" style="text-align: center; padding: 20px;">No transaction records found.</p>`;
+    } else {
+        sortedTx.forEach(tx => {
+            let label = "";
+            let badgeClass = "";
+            let prefix = "";
+            let entityName = "";
+
+            if (tx.type === "inward") {
+                label = "Bought";
+                badgeClass = "inward";
+                prefix = "+";
+                entityName = getEntityName(tx.entityId, "vendor");
+            } else if (tx.type === "outward") {
+                label = "Sent to";
+                badgeClass = "outward";
+                prefix = "-";
+                entityName = getEntityName(tx.entityId, "worker");
+            } else if (tx.type === "consume") {
+                label = "Consumed by";
+                badgeClass = "consume";
+                prefix = "-";
+                entityName = getEntityName(tx.entityId, "worker");
+            } else if (tx.type === "return") {
+                label = "Returned from";
+                badgeClass = "return";
+                prefix = "+";
+                entityName = getEntityName(tx.entityId, "worker");
+            }
+
+            const item = document.createElement("div");
+            item.className = "ledger-item";
+            item.innerHTML = `
+                <div class="ledger-item-left">
+                    <div class="ledger-badge ${badgeClass}">
+                        ${tx.type === 'inward' ? '📥' : tx.type === 'outward' ? '📤' : tx.type === 'consume' ? '⚖️' : '🔄'}
+                    </div>
+                    <div class="ledger-details">
+                        <h4>${tx.polymer}</h4>
+                        <p>${label} ${entityName} (${tx.date})</p>
+                    </div>
+                </div>
+                <div class="ledger-item-right">
+                    <div class="ledger-qty ${badgeClass}">${prefix}${tx.quantity.toLocaleString()} kg</div>
+                    <p style="font-size: 10px; color: var(--text-secondary);">${tx.reference || tx.meta || ""}</p>
+                </div>
+            `;
+            ledgerContainer.appendChild(item);
+        });
+    }
+
+    // Outstanding Vendor Payments rendering
+    const paymentsBody = document.getElementById("outstanding-payments-body");
+    const sortBtn = document.getElementById("btn-sort-payments");
+    if (sortBtn) {
+        sortBtn.innerText = paymentsSortOrder === "asc" ? "Sort: Urgent First 🔽" : "Sort: Latest First 🔼";
+    }
+
+    if (paymentsBody) {
+        paymentsBody.innerHTML = "";
+        
+        // Map pending bills with computed details
+        let pendingBills = db.transactions
+            .filter(tx => tx.type === "inward" && tx.status !== "paid" && tx.rate !== null && tx.quantity > 0)
+            .map(tx => {
+                const vendor = db.vendors.find(v => v.id === tx.entityId);
+                const amount = tx.quantity * tx.rate;
+                
+                // Calculate Due Date & Days Left
+                const invoiceDate = new Date(tx.date);
+                const creditDays = vendor ? (vendor.creditPeriod || 0) : 0;
+                const dueDate = new Date(invoiceDate);
+                dueDate.setDate(invoiceDate.getDate() + creditDays);
+
+                const today = new Date();
+                today.setHours(0,0,0,0);
+                dueDate.setHours(0,0,0,0);
+
+                const timeDiff = dueDate.getTime() - today.getTime();
+                const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+                const formattedDueDate = dueDate.toISOString().split("T")[0];
+
+                return { tx, vendor, amount, formattedDueDate, daysDiff };
+            });
+
+        // Apply dynamic sorting order
+        pendingBills.sort((a, b) => {
+            if (paymentsSortOrder === "asc") {
+                return a.daysDiff - b.daysDiff;
+            } else {
+                return b.daysDiff - a.daysDiff;
+            }
+        });
+
+        if (pendingBills.length === 0) {
+            paymentsBody.innerHTML = `<tr><td colspan="7" style="text-align: center;" class="text-muted">No outstanding vendor payments found.</td></tr>`;
+        } else {
+            pendingBills.forEach(bill => {
+                const tx = bill.tx;
+                const vendor = bill.vendor;
+                const amount = bill.amount;
+                const formattedDueDate = bill.formattedDueDate;
+                const daysDiff = bill.daysDiff;
+
+                let daysLeftHTML = "";
+                let statusBadge = "";
+
+                if (daysDiff < 0) {
+                    daysLeftHTML = `<span class="text-danger" style="font-weight: 600;">${Math.abs(daysDiff)} days overdue</span>`;
+                    statusBadge = `<span style="background-color: rgba(239,68,68,0.15); color: var(--color-danger); font-size:11px; padding: 2px 6px; border-radius:4px; font-weight:600;">⚠️ Overdue</span>`;
+                } else if (daysDiff === 0) {
+                    daysLeftHTML = `<span class="text-warning" style="font-weight: 600;">Due Today</span>`;
+                    statusBadge = `<span style="background-color: rgba(245,158,11,0.15); color: var(--color-warning); font-size:11px; padding: 2px 6px; border-radius:4px; font-weight:600;">⚠️ Due Today</span>`;
+                } else {
+                    daysLeftHTML = `<span style="color: var(--color-success); font-weight:600;">${daysDiff} days left</span>`;
+                    statusBadge = `<span style="background-color: rgba(16,185,129,0.15); color: var(--color-success); font-size:11px; padding: 2px 6px; border-radius:4px; font-weight:600;">⏳ Active</span>`;
+                }
+
+                // Render clickable Vendor Name link
+                const vendorNameHTML = vendor 
+                    ? `<a href="#" onclick="showVendorOutstanding('${vendor.id}'); return false;" style="color: var(--color-indigo); text-decoration: underline; font-weight: 600;">${vendor.name}</a>` 
+                    : 'Unknown Vendor';
+
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td data-label="Invoice No">${tx.reference}</td>
+                    <td data-label="Vendor">${vendorNameHTML}</td>
+                    <td data-label="Amount"><strong>₹${amount.toLocaleString()}</strong></td>
+                    <td data-label="Due Date">${formattedDueDate}</td>
+                    <td data-label="Days Left">${daysLeftHTML}</td>
+                    <td data-label="Status">${statusBadge}</td>
+                    <td data-label="Action">
+                        <button class="btn btn-sm btn-success" onclick="togglePaymentStatus('${tx.id}')" style="padding: 4px 8px; font-size: 11px;">Mark Paid</button>
+                    </td>
+                `;
+                paymentsBody.appendChild(tr);
+            });
+        }
+    }
+}
+
+function renderInwardTab() {
+    const query = document.getElementById("search-inward").value.toLowerCase();
+    const partnerFilter = document.getElementById("filter-inward-partner") ? document.getElementById("filter-inward-partner").value : "all";
+    const fromDate = document.getElementById("filter-inward-from") ? document.getElementById("filter-inward-from").value : "";
+    const toDate = document.getElementById("filter-inward-to") ? document.getElementById("filter-inward-to").value : "";
+    const tbody = document.getElementById("inward-table-body");
+    tbody.innerHTML = "";
+
+    const filtered = db.transactions
+        .filter(tx => tx.type === "inward")
+        .filter(tx => {
+            if (partnerFilter !== "all") {
+                if (partnerFilter.startsWith("v_") && tx.entityId !== partnerFilter) return false;
+                if (partnerFilter.startsWith("w_") && tx.deliveredTo !== partnerFilter) return false;
+            }
+            if (fromDate && tx.date < fromDate) return false;
+            if (toDate && tx.date > toDate) return false;
+            return true;
+        })
+        .filter(tx => {
+            const vName = getEntityName(tx.entityId, "vendor").toLowerCase();
+            const brandVal = (tx.brand || "").toLowerCase();
+            return tx.reference.toLowerCase().includes(query) || 
+                   vName.includes(query) || 
+                   brandVal.includes(query) ||
+                   tx.polymer.toLowerCase().includes(query);
+        })
+        .sort((a,b) => new Date(b.date) - new Date(a.date));
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="10" style="text-align: center;" class="text-muted">No inward purchase logs found.</td></tr>`;
+        return;
+    }
+
+    filtered.forEach(tx => {
+        const tr = document.createElement("tr");
+        const rateVal = tx.rate ? `₹${tx.rate}` : "-";
+        const totalVal = tx.rate ? `₹${(tx.rate * tx.quantity).toLocaleString()}` : "-";
+        
+        let vendorDisplay = getEntityName(tx.entityId, "vendor");
+        if (tx.deliveredTo && tx.deliveredTo !== "warehouse") {
+            const workerName = getEntityName(tx.deliveredTo, "worker");
+            vendorDisplay += `<br><span style="font-size: 11px; color: var(--color-warning);">Direct to: ${workerName}</span>`;
+        }
+
+        const isPaid = tx.status === "paid";
+        const statusHtml = `
+            <td data-label="Status">
+                <button class="btn" onclick="togglePaymentStatus('${tx.id}')" style="font-size: 11px; padding: 4px 8px; border-radius: 4px; ${isPaid ? 'background-color: rgba(16,185,129,0.15); color: var(--color-success); border: 1px solid var(--color-success);' : 'background-color: rgba(239,68,68,0.15); color: var(--color-danger); border: 1px solid var(--color-danger);'}">
+                    ${isPaid ? '🟢 Paid' : '🔴 Pending'}
+                </button>
+            </td>
+        `;
+
+        tr.innerHTML = `
+            <td data-label="Date">${tx.date}</td>
+            <td data-label="Invoice No">${tx.reference}</td>
+            <td data-label="Vendor">${vendorDisplay}</td>
+            <td data-label="Polymer Type">${tx.polymer}</td>
+            <td data-label="Brand">${tx.brand || "-"}</td>
+            <td data-label="Quantity (kg)">${tx.quantity.toLocaleString()} kg</td>
+            <td data-label="Rate (₹/kg)">${rateVal}</td>
+            <td data-label="Total Value">${totalVal}</td>
+            ${statusHtml}
+            <td data-label="Action">
+                <button class="btn-share-row" onclick="shareInwardToWhatsApp('${tx.id}')" title="Share on WhatsApp" style="margin-right: 4px; font-size: 14px; background: none; border: none; cursor: pointer;">💬</button>
+                <button class="btn-edit-row" onclick="editInwardTransaction('${tx.id}')" title="Edit record">✏️</button>
+                <button class="btn-delete-row" onclick="deleteTransaction('${tx.id}')" title="Delete record">🗑️</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function renderOutwardTab() {
+    const query = document.getElementById("search-outward").value.toLowerCase();
+    const tbody = document.getElementById("outward-table-body");
+    tbody.innerHTML = "";
+
+    const filtered = db.transactions
+        .filter(tx => tx.type === "outward")
+        .filter(tx => {
+            const wName = getEntityName(tx.entityId, "worker").toLowerCase();
+            const vehicle = (tx.meta || "").toLowerCase();
+            return tx.reference.toLowerCase().includes(query) || 
+                   wName.includes(query) || 
+                   tx.polymer.toLowerCase().includes(query) ||
+                   vehicle.includes(query);
+        })
+        .sort((a,b) => new Date(b.date) - new Date(a.date));
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center;" class="text-muted">No dispatch logs found.</td></tr>`;
+        return;
+    }
+
+    filtered.forEach(tx => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td data-label="Date">${tx.date}</td>
+            <td data-label="Challan No">${tx.reference}</td>
+            <td data-label="Job Worker">${getEntityName(tx.entityId, "worker")}</td>
+            <td data-label="Polymer Type">${tx.polymer}</td>
+            <td data-label="Quantity (kg)">${tx.quantity.toLocaleString()} kg</td>
+            <td data-label="Vehicle No">${tx.meta || "-"}</td>
+            <td data-label="Action">
+                <button class="btn-delete-row" onclick="deleteTransaction('${tx.id}')" title="Delete record">🗑️</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function renderWorkersTab() {
+    const select = document.getElementById("worker-select-filter");
+    const activeWorkerId = select.value;
+    
+    // Render worker balance catalog card
+    const stockContainer = document.getElementById("worker-stocks-list");
+    stockContainer.innerHTML = "";
+
+    const ledgerBody = document.getElementById("worker-ledger-body");
+    ledgerBody.innerHTML = "";
+
+    if (!activeWorkerId) {
+        stockContainer.innerHTML = `<p class="text-muted" style="text-align: center; padding: 20px;">Please register a job worker first.</p>`;
+        ledgerBody.innerHTML = `<tr><td colspan="7" style="text-align: center;" class="text-muted">No job worker selected.</td></tr>`;
+        return;
+    }
+
+    const balances = getJobWorkerBalances(activeWorkerId);
+    let totalWorkerStock = 0;
+    
+    let maxVal = 0;
+    db.polymers.forEach(p => {
+        if (balances[p] > maxVal) maxVal = balances[p];
+    });
+
+    db.polymers.forEach(p => {
+        const val = balances[p] || 0;
+        totalWorkerStock += val;
+        const pct = maxVal > 0 ? (val / maxVal) * 100 : 0;
+
+        const item = document.createElement("div");
+        item.className = "worker-stock-item";
+        item.innerHTML = `
+            <div class="worker-stock-header">
+                <span class="worker-stock-poly">${p}</span>
+                <span class="worker-stock-val">${val.toLocaleString()} kg</span>
+            </div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" style="width: ${pct}%;"></div>
+            </div>
+        `;
+        stockContainer.appendChild(item);
+    });
+
+    if (totalWorkerStock === 0) {
+        stockContainer.innerHTML = `<div style="text-align: center; padding: 32px;" class="text-muted">Currently holding 0 kg custody polymers.</div>`;
+    }
+
+    // Ledger records specifically for this job worker
+    const workerTxs = db.transactions
+        .filter(tx => tx.entityId === activeWorkerId || tx.deliveredTo === activeWorkerId)
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    if (workerTxs.length === 0) {
+        ledgerBody.innerHTML = `<tr><td colspan="7" style="text-align: center;" class="text-muted">No activities registered for this worker yet.</td></tr>`;
+        return;
+    }
+
+    workerTxs.forEach(tx => {
+        const tr = document.createElement("tr");
+        let typeBadge = "";
+        let qtyInStr = "-";
+        let qtyOutStr = "-";
+        let note = tx.reference || tx.meta || "";
+
+        if (tx.type === "inward" && tx.deliveredTo === activeWorkerId) {
+            typeBadge = `<span class="text-success" style="font-weight:600;">📥 Direct Buy</span>`;
+            qtyInStr = `<strong>${tx.quantity.toLocaleString()} kg</strong>`;
+            const vendorName = getEntityName(tx.entityId, "vendor");
+            note = `From: ${vendorName} | Invoice: ${tx.reference} ${tx.brand ? `[Brand: ${tx.brand}]` : ""}`;
+        } else if (tx.type === "outward") {
+            typeBadge = `<span class="text-indigo" style="font-weight:600;">📥 Stock Sent</span>`;
+            qtyInStr = `<strong>${tx.quantity.toLocaleString()} kg</strong>`;
+            note = `Challan: ${tx.reference} ${tx.meta ? `(${tx.meta})` : ""}`;
+        } else if (tx.type === "consume") {
+            typeBadge = `<span class="text-warning" style="font-weight:600;">⚙️ Consumed</span>`;
+            qtyOutStr = `<strong>${tx.quantity.toLocaleString()} kg</strong>`;
+            note = tx.meta || "Production Use";
+        } else if (tx.type === "return") {
+            typeBadge = `<span class="text-success" style="font-weight:600;">🔄 Returned</span>`;
+            qtyOutStr = `<strong>${tx.quantity.toLocaleString()} kg</strong>`;
+            note = `Gate Pass: ${tx.reference} ${tx.meta ? `(${tx.meta})` : ""}`;
+        }
+
+        tr.innerHTML = `
+            <td data-label="Date">${tx.date}</td>
+            <td data-label="Type">${typeBadge}</td>
+            <td data-label="Polymer Type">${tx.polymer}</td>
+            <td data-label="Qty In (Sent)">${qtyInStr}</td>
+            <td data-label="Qty Out (Used/Returned)">${qtyOutStr}</td>
+            <td data-label="Challan/Note">${note}</td>
+            <td data-label="Action">
+                <button class="btn-delete-row" onclick="deleteTransaction('${tx.id}')" title="Delete record">🗑️</button>
+            </td>
+        `;
+        ledgerBody.appendChild(tr);
+    });
+}
+
+function renderManageTab() {
+    // Vendors
+    const vendorList = document.getElementById("vendor-list");
+    vendorList.innerHTML = "";
+    db.vendors.forEach(v => {
+        const li = document.createElement("li");
+        const creditText = v.creditPeriod ? ` <span style="color:var(--text-secondary); font-size:11px;">(Credit: ${v.creditPeriod} days)</span>` : "";
+        li.innerHTML = `
+            <span><strong>${v.name}</strong>${creditText}</span>
+            <div>
+                <button class="btn-edit-row" style="margin-right: 4px; font-size: 13px; color: var(--color-indigo);" onclick="editVendor('${v.id}')" title="Edit Vendor">✏️</button>
+                <button class="btn-delete-row" style="font-size: 13px;" onclick="deleteVendor('${v.id}')" title="Delete Vendor">&times;</button>
+            </div>
+        `;
+        vendorList.appendChild(li);
+    });
+
+    // Job Workers
+    const workerList = document.getElementById("worker-list");
+    workerList.innerHTML = "";
+    db.jobWorkers.forEach(w => {
+        const li = document.createElement("li");
+        const detailsText = ` <br><span style="color:var(--text-secondary); font-size:11px;">📍 Addr: ${w.address || '-'} | 📞 Mob: ${w.mobile || '-'}</span>`;
+        li.innerHTML = `
+            <span><strong>${w.name}</strong>${detailsText}</span>
+            <div>
+                <button class="btn-edit-row" style="margin-right: 4px; font-size: 13px; color: var(--color-indigo);" onclick="editJobWorker('${w.id}')" title="Edit Job Worker">✏️</button>
+                <button class="btn-delete-row" style="font-size: 13px;" onclick="deleteJobWorker('${w.id}')" title="Delete Job Worker">&times;</button>
+            </div>
+        `;
+        workerList.appendChild(li);
+    });
+
+    // Polymers
+    const polyList = document.getElementById("polymer-list");
+    polyList.innerHTML = "";
+    db.polymers.forEach(p => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+            <span><strong>${p}</strong></span>
+            <div>
+                <button class="btn-edit-row" style="margin-right: 4px; font-size: 13px; color: var(--color-indigo);" onclick="editPolymer('${p}')" title="Edit Polymer">✏️</button>
+                <button class="btn-delete-row" style="font-size: 13px;" onclick="deletePolymer('${p}')" title="Delete Polymer">&times;</button>
+            </div>
+        `;
+        polyList.appendChild(li);
+    });
+}
+
+function populateSelectDropdowns() {
+    // Selects in modals
+    const inwardVendor = document.getElementById("inward-vendor");
+    const inwardPolymer = document.getElementById("inward-polymer");
+    const inwardDeliverTo = document.getElementById("inward-deliver-to");
+    const outwardWorker = document.getElementById("outward-worker");
+    const outwardPolymer = document.getElementById("outward-polymer");
+    const workerSelectFilter = document.getElementById("worker-select-filter");
+    const filterInwardPartner = document.getElementById("filter-inward-partner");
+
+    // Save previous filter values to restore
+    const prevFilterVal = filterInwardPartner ? filterInwardPartner.value : "all";
+
+    // Clear
+    inwardVendor.innerHTML = "";
+    inwardPolymer.innerHTML = "";
+    inwardDeliverTo.innerHTML = `<option value="warehouse">🏢 Warehouse (Internal Stock)</option>`;
+    outwardWorker.innerHTML = "";
+    outwardPolymer.innerHTML = "";
+
+    // Save previous active worker filter to restore selection
+    const prevWorkerSelect = workerSelectFilter.value;
+    workerSelectFilter.innerHTML = "";
+
+    db.vendors.forEach(v => {
+        inwardVendor.innerHTML += `<option value="${v.id}">${v.name}</option>`;
+    });
+
+    db.polymers.forEach(p => {
+        inwardPolymer.innerHTML += `<option value="${p}">${p}</option>`;
+        outwardPolymer.innerHTML += `<option value="${p}">${p}</option>`;
+    });
+
+    db.jobWorkers.forEach(w => {
+        inwardDeliverTo.innerHTML += `<option value="${w.id}">🏭 Direct to: ${w.name}</option>`;
+        outwardWorker.innerHTML += `<option value="${w.id}">${w.name}</option>`;
+        workerSelectFilter.innerHTML += `<option value="${w.id}">${w.name}</option>`;
+    });
+
+    // Populate Inward Ledger Filter Dropdown
+    if (filterInwardPartner) {
+        let html = `<option value="all">🔍 All Vendors & Workers</option>`;
+        if (db.vendors.length > 0) {
+            html += `<optgroup label="Vendors">`;
+            db.vendors.forEach(v => {
+                html += `<option value="${v.id}">🤝 ${v.name}</option>`;
+            });
+            html += `</optgroup>`;
+        }
+        if (db.jobWorkers.length > 0) {
+            html += `<optgroup label="Job Workers (Direct Delivery)">`;
+            db.jobWorkers.forEach(w => {
+                html += `<option value="${w.id}">🏭 ${w.name}</option>`;
+            });
+            html += `</optgroup>`;
+        }
+        filterInwardPartner.innerHTML = html;
+        
+        // Restore value if still exists in the options list
+        const optionExists = Array.from(filterInwardPartner.options).some(opt => opt.value === prevFilterVal);
+        filterInwardPartner.value = optionExists ? prevFilterVal : "all";
+    }
+
+    // Restore select filter value if valid
+    if (prevWorkerSelect && db.jobWorkers.some(w => w.id === prevWorkerSelect)) {
+        workerSelectFilter.value = prevWorkerSelect;
+    } else if (db.jobWorkers.length > 0) {
+        workerSelectFilter.value = db.jobWorkers[0].id;
+    }
+}
+
+// --- Action & Handlers Functions ---
+
+function deleteTransaction(id) {
+    if (confirm("Are you sure you want to delete this ledger entry?")) {
+        db.transactions = db.transactions.filter(tx => tx.id !== id);
+        saveDatabase();
+        renderAll();
+    }
+}
+
+function togglePaymentStatus(id) {
+    const tx = db.transactions.find(t => t.id === id);
+    if (tx) {
+        tx.status = tx.status === "paid" ? "pending" : "paid";
+        saveDatabase();
+        renderAll();
+    }
+}
+
+window.showVendorOutstanding = function(vendorId) {
+    const vendor = db.vendors.find(v => v.id === vendorId);
+    if (!vendor) return;
+
+    let totalOutstanding = 0;
+    let pendingCount = 0;
+    let detailsHTML = `
+        <table class="custom-table" style="font-size: 12px; margin-top: 16px; border: 1px solid var(--border-glass); background-color: rgba(0,0,0,0.1);">
+            <thead>
+                <tr>
+                    <th style="padding: 8px;">Invoice No</th>
+                    <th style="padding: 8px;">Polymer</th>
+                    <th style="padding: 8px;">Amount</th>
+                    <th style="padding: 8px;">Due Date</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    db.transactions.forEach(tx => {
+        if (tx.type === "inward" && tx.entityId === vendorId && tx.status !== "paid" && tx.rate !== null) {
+            const amount = tx.quantity * tx.rate;
+            totalOutstanding += amount;
+            pendingCount++;
+
+            const invoiceDate = new Date(tx.date);
+            const creditDays = vendor.creditPeriod || 0;
+            const dueDate = new Date(invoiceDate);
+            dueDate.setDate(invoiceDate.getDate() + creditDays);
+            const formattedDueDate = dueDate.toISOString().split("T")[0];
+
+            detailsHTML += `
+                <tr>
+                    <td style="padding: 8px;" data-label="Invoice No">${tx.reference}</td>
+                    <td style="padding: 8px;" data-label="Polymer">${tx.polymer}</td>
+                    <td style="padding: 8px;" data-label="Amount"><strong>₹${amount.toLocaleString()}</strong></td>
+                    <td style="padding: 8px;" data-label="Due Date">${formattedDueDate}</td>
+                </tr>
+            `;
+        }
+    });
+
+    detailsHTML += `</tbody></table>`;
+
+    const modalTitle = document.getElementById("explainer-title");
+    const modalDesc = document.getElementById("explainer-desc");
+    const modalBreakdown = document.getElementById("explainer-breakdown");
+
+    if (modalTitle && modalDesc && modalBreakdown) {
+        modalTitle.innerText = "🤝 Vendor Account Statement";
+        modalDesc.innerHTML = `
+            Account summary for <strong>${vendor.name}</strong>.<br>
+            Total Pending Invoices: <strong>${pendingCount}</strong><br>
+            Total Outstanding Balance: <strong class="text-danger">₹${totalOutstanding.toLocaleString()}</strong>
+        `;
+        modalBreakdown.innerHTML = pendingCount > 0 ? detailsHTML : `<p class="text-muted" style="text-align: center; padding: 20px;">No pending invoices found for this vendor.</p>`;
+        openModal("modal-explainer");
+    }
+};
+
+window.shareInwardToWhatsApp = function(txId) {
+    const tx = db.transactions.find(t => t.id === txId);
+    if (!tx) return;
+    const vendorName = getEntityName(tx.entityId, "vendor");
+    const isWorker = tx.deliveredTo && tx.deliveredTo !== "warehouse";
+    const destName = isWorker ? getEntityName(tx.deliveredTo, "worker") : "Warehouse";
+    const workerObj = isWorker ? db.jobWorkers.find(w => w.id === tx.deliveredTo) : null;
+    const workerInfoText = workerObj 
+        ? `\nWorker Address: ${workerObj.address || '-'}\nWorker Mobile: ${workerObj.mobile || '-'}` 
+        : "";
+
+    const shareText = `*Purchase Order*
+Date: ${tx.date}
+Invoice No: ${tx.reference}
+Vendor: ${vendorName}
+Polymer: ${tx.polymer}
+Brand/Remark: ${tx.brand || "-"}
+Quantity: ${tx.quantity.toLocaleString()} kg
+Rate: ₹${tx.rate ? tx.rate : '-'} /kg
+Delivery To: ${destName}${workerInfoText}`;
+
+    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+    window.open(url, "_blank");
+};
+
+function editInwardTransaction(id) {
+    const tx = db.transactions.find(t => t.id === id);
+    if (!tx) return;
+
+    document.getElementById("inward-edit-id").value = tx.id;
+    document.getElementById("inward-date").value = tx.date;
+    document.getElementById("inward-invoice").value = tx.reference === "-" ? "" : tx.reference;
+    document.getElementById("inward-brand").value = tx.brand === "-" ? "" : tx.brand;
+    document.getElementById("inward-vendor").value = tx.entityId;
+    document.getElementById("inward-polymer").value = tx.polymer;
+    document.getElementById("inward-deliver-to").value = tx.deliveredTo || "warehouse";
+    document.getElementById("inward-qty").value = tx.quantity;
+    document.getElementById("inward-rate").value = tx.rate || "";
+
+    document.getElementById("modal-inward-title").innerText = "✏️ Edit Inward Purchase";
+    openModal("modal-inward");
+}
+
+function deleteVendor(id) {
+    const hasTx = db.transactions.some(tx => tx.entityId === id);
+    if (hasTx) {
+        alert("Cannot delete vendor. Active transactions are linked to this vendor. Delete the transaction logs first.");
+        return;
+    }
+    if (confirm("Delete this vendor?")) {
+        db.vendors = db.vendors.filter(v => v.id !== id);
+        saveDatabase();
+        renderAll();
+    }
+}
+
+function editVendor(id) {
+    const vendor = db.vendors.find(v => v.id === id);
+    if (!vendor) return;
+
+    document.getElementById("vendor-edit-id").value = vendor.id;
+    document.getElementById("new-vendor-name").value = vendor.name;
+    document.getElementById("new-vendor-credit").value = vendor.creditPeriod || "";
+
+    document.getElementById("vendor-form-title").innerText = "✏️ Edit Vendor";
+    document.getElementById("btn-vendor-submit").innerText = "Update Vendor";
+    document.getElementById("btn-vendor-cancel").style.display = "block";
+}
+
+function cancelVendorEdit() {
+    document.getElementById("vendor-edit-id").value = "";
+    document.getElementById("new-vendor-name").value = "";
+    document.getElementById("new-vendor-credit").value = "";
+
+    document.getElementById("vendor-form-title").innerText = "🤝 Add Vendor";
+    document.getElementById("btn-vendor-submit").innerText = "Add Vendor";
+    document.getElementById("btn-vendor-cancel").style.display = "none";
+}
+
+function deleteJobWorker(id) {
+    const hasTx = db.transactions.some(tx => tx.entityId === id);
+    if (hasTx) {
+        alert("Cannot delete job worker. Active transactions/balances exist for this worker. Delete ledger entries first.");
+        return;
+    }
+    if (confirm("Delete this job worker?")) {
+        db.jobWorkers = db.jobWorkers.filter(w => w.id !== id);
+        saveDatabase();
+        renderAll();
+    }
+}
+
+function editJobWorker(id) {
+    const worker = db.jobWorkers.find(w => w.id === id);
+    if (!worker) return;
+
+    document.getElementById("worker-edit-id").value = worker.id;
+    document.getElementById("new-worker-name").value = worker.name;
+    document.getElementById("new-worker-address").value = worker.address || "";
+    document.getElementById("new-worker-mobile").value = worker.mobile || "";
+
+    document.getElementById("worker-form-title").innerText = "✏️ Edit Job Worker";
+    document.getElementById("btn-worker-submit").innerText = "Update Worker";
+    document.getElementById("btn-worker-cancel").style.display = "block";
+}
+
+function cancelJobWorkerEdit() {
+    document.getElementById("worker-edit-id").value = "";
+    document.getElementById("new-worker-name").value = "";
+    document.getElementById("new-worker-address").value = "";
+    document.getElementById("new-worker-mobile").value = "";
+
+    document.getElementById("worker-form-title").innerText = "🔧 Add Job Worker";
+    document.getElementById("btn-worker-submit").innerText = "Add Job Worker";
+    document.getElementById("btn-worker-cancel").style.display = "none";
+}
+
+function deletePolymer(name) {
+    const hasTx = db.transactions.some(tx => tx.polymer === name);
+    if (hasTx) {
+        alert("Cannot delete polymer type. Active movements are registered under this name.");
+        return;
+    }
+    if (confirm(`Delete polymer brand/type '${name}'?`)) {
+        db.polymers = db.polymers.filter(p => p !== name);
+        saveDatabase();
+        renderAll();
+    }
+}
+
+function editPolymer(name) {
+    const poly = db.polymers.find(p => p === name);
+    if (!poly) return;
+
+    document.getElementById("polymer-edit-old-name").value = poly;
+    document.getElementById("new-polymer-name").value = poly;
+
+    document.getElementById("polymer-form-title").innerText = "✏️ Edit Polymer";
+    document.getElementById("btn-polymer-submit").innerText = "Update Polymer";
+    document.getElementById("btn-polymer-cancel").style.display = "block";
+}
+
+function cancelPolymerEdit() {
+    document.getElementById("polymer-edit-old-name").value = "";
+    document.getElementById("new-polymer-name").value = "";
+
+    document.getElementById("polymer-form-title").innerText = "🧪 Add Polymer";
+    document.getElementById("btn-polymer-submit").innerText = "Add Polymer";
+    document.getElementById("btn-polymer-cancel").style.display = "none";
+}
+
+// Modals Handling
+function openModal(id) {
+    document.getElementById(id).classList.add("active");
+    
+    // Initialize dates dynamically to today's date
+    const today = new Date().toISOString().split("T")[0];
+    if (id === "modal-inward") {
+        const editId = document.getElementById("inward-edit-id").value;
+        if (!editId) {
+            document.getElementById("inward-date").value = today;
+        }
+    } else if (id === "modal-outward") {
+        document.getElementById("outward-date").value = today;
+        updateWarehouseAvailableHint();
+    } else if (id === "modal-consumption") {
+        document.getElementById("consumption-date").value = today;
+        updateWorkerConsumptionHint();
+    } else if (id === "modal-return") {
+        document.getElementById("return-date").value = today;
+        updateWorkerReturnHint();
+    }
+}
+
+function closeModal(id) {
+    document.getElementById(id).classList.remove("active");
+}
+
+function updateWarehouseAvailableHint() {
+    const poly = document.getElementById("outward-polymer").value;
+    const balances = getWarehouseBalances();
+    const available = balances[poly] || 0;
+    document.getElementById("warehouse-available-hint").innerText = `Available in Warehouse: ${available.toLocaleString()} kg`;
+}
+
+function updateWorkerConsumptionHint() {
+    const workerId = document.getElementById("consumption-worker-id").value;
+    const poly = document.getElementById("consumption-polymer").value;
+    if (!workerId || !poly) return;
+    const balances = getJobWorkerBalances(workerId);
+    const available = balances[poly] || 0;
+    document.getElementById("worker-available-hint").innerText = `Active custody balance: ${available.toLocaleString()} kg`;
+}
+
+function updateWorkerReturnHint() {
+    const workerId = document.getElementById("return-worker-id").value;
+    const poly = document.getElementById("return-polymer").value;
+    if (!workerId || !poly) return;
+    const balances = getJobWorkerBalances(workerId);
+    const available = balances[poly] || 0;
+    document.getElementById("worker-return-available-hint").innerText = `Active custody balance: ${available.toLocaleString()} kg`;
+}
+
+// --- Event Listeners Bindings ---
+
+document.addEventListener("DOMContentLoaded", () => {
+    loadDatabase();
+    renderAll();
+
+    // Outstanding Payments Sort Button Toggle
+    const btnSortPayments = document.getElementById("btn-sort-payments");
+    if (btnSortPayments) {
+        btnSortPayments.addEventListener("click", () => {
+            paymentsSortOrder = paymentsSortOrder === "asc" ? "desc" : "asc";
+            renderDashboard();
+        });
+    }
+
+    // Price Period Select Filter Change Listener
+    const periodSelect = document.getElementById("price-period-select");
+    const customDateInputs = document.getElementById("custom-date-inputs");
+    if (periodSelect) {
+        periodSelect.addEventListener("change", () => {
+            if (periodSelect.value === "custom") {
+                customDateInputs.style.display = "flex";
+            } else {
+                customDateInputs.style.display = "none";
+            }
+            renderDashboard();
+        });
+    }
+
+    const priceFromDate = document.getElementById("price-from-date");
+    const priceToDate = document.getElementById("price-to-date");
+    if (priceFromDate) priceFromDate.addEventListener("input", renderDashboard);
+    if (priceToDate) priceToDate.addEventListener("input", renderDashboard);
+
+    // Tab Navigation
+    const navButtons = document.querySelectorAll(".nav-btn, .bottom-nav-btn");
+    navButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+            const tabId = btn.getAttribute("data-tab");
+            
+            // Toggle active buttons across both layouts
+            navButtons.forEach(b => {
+                if (b.getAttribute("data-tab") === tabId) {
+                    b.classList.add("active");
+                } else {
+                    b.classList.remove("active");
+                }
+            });
+
+            // Toggle panels
+            document.querySelectorAll(".tab-panel").forEach(panel => {
+                panel.classList.remove("active");
+            });
+            document.getElementById(`tab-${tabId}`).classList.add("active");
+
+            // Update title
+            const titles = {
+                dashboard: "Dashboard Overview",
+                inward: "Inward Purchase Ledger",
+                outward: "Outward Dispatches Ledger",
+                workers: "Job Worker Stock Statement",
+                manage: "Database Management"
+            };
+            document.getElementById("page-title").innerText = titles[tabId] || "Overview";
+        });
+    });
+
+    // Quick Action Buttons
+    function openNewInwardModal() {
+        document.getElementById("inward-edit-id").value = "";
+        document.getElementById("modal-inward-title").innerText = "📥 Log Inward Purchase";
+        document.getElementById("form-inward").reset();
+        openModal("modal-inward");
+    }
+    document.getElementById("btn-quick-inward").addEventListener("click", openNewInwardModal);
+    document.getElementById("btn-add-inward").addEventListener("click", openNewInwardModal);
+    document.getElementById("btn-quick-outward").addEventListener("click", () => openModal("modal-outward"));
+    document.getElementById("btn-add-outward").addEventListener("click", () => openModal("modal-outward"));
+
+    // Modal Form Submits
+    
+    // 1. Log Inward Purchase
+    document.getElementById("form-inward").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const editId = document.getElementById("inward-edit-id").value;
+        const date = document.getElementById("inward-date").value;
+        const ref = document.getElementById("inward-invoice").value.trim() || "-";
+        const brand = document.getElementById("inward-brand").value.trim() || "-";
+        const entityId = document.getElementById("inward-vendor").value;
+        const polymer = document.getElementById("inward-polymer").value;
+        const deliveredTo = document.getElementById("inward-deliver-to").value;
+        const qty = parseFloat(document.getElementById("inward-qty").value);
+        const rate = parseFloat(document.getElementById("inward-rate").value) || null;
+
+        if (editId) {
+            const tx = db.transactions.find(t => t.id === editId);
+            if (tx) {
+                tx.date = date;
+                tx.reference = ref;
+                tx.brand = brand;
+                tx.entityId = entityId;
+                tx.polymer = polymer;
+                tx.deliveredTo = deliveredTo;
+                tx.quantity = qty;
+                tx.rate = rate;
+            }
+        } else {
+            const newTx = {
+                id: "t_" + Date.now(),
+                date,
+                type: "inward",
+                entityId,
+                polymer,
+                brand,
+                deliveredTo,
+                quantity: qty,
+                rate,
+                reference: ref,
+                status: "pending",
+                meta: ""
+            };
+            db.transactions.push(newTx);
+        }
+
+        saveDatabase();
+        closeModal("modal-inward");
+        document.getElementById("form-inward").reset();
+        renderAll();
+
+        // Prompt to share details directly to WhatsApp
+        const vendorName = getEntityName(entityId, "vendor");
+        const isWorker = deliveredTo && deliveredTo !== "warehouse";
+        const destName = isWorker ? getEntityName(deliveredTo, "worker") : "Warehouse";
+        const workerObj = isWorker ? db.jobWorkers.find(w => w.id === deliveredTo) : null;
+        const workerInfoText = workerObj 
+            ? `\nWorker Address: ${workerObj.address || '-'}\nWorker Mobile: ${workerObj.mobile || '-'}` 
+            : "";
+
+        const shareText = `*Purchase Order*
+Date: ${date}
+Invoice No: ${ref}
+Vendor: ${vendorName}
+Polymer: ${polymer}
+Brand/Remark: ${brand}
+Quantity: ${qty.toLocaleString()} kg
+Rate: ₹${rate ? rate : '-'} /kg
+Delivery To: ${destName}${workerInfoText}`;
+
+        if (confirm("Inward purchase logged successfully!\n\nWould you like to share the details on WhatsApp?")) {
+            const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+            window.open(url, "_blank");
+        }
+    });
+
+    // Update hint if polymer changes on outward modal
+    document.getElementById("outward-polymer").addEventListener("change", updateWarehouseAvailableHint);
+
+    // 2. Log Outward Dispatch
+    document.getElementById("form-outward").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const date = document.getElementById("outward-date").value;
+        const ref = document.getElementById("outward-challan").value;
+        const entityId = document.getElementById("outward-worker").value;
+        const polymer = document.getElementById("outward-polymer").value;
+        const qty = parseFloat(document.getElementById("outward-qty").value);
+        const vehicle = document.getElementById("outward-vehicle").value;
+
+        // Validation
+        const balances = getWarehouseBalances();
+        const available = balances[polymer] || 0;
+        if (qty > available) {
+            if (!confirm(`Warning: You only have ${available} kg of ${polymer} in warehouse. Dispatched amount (${qty} kg) exceeds stock. Proceed anyway?`)) {
+                return;
+            }
+        }
+
+        const newTx = {
+            id: "t_" + Date.now(),
+            date,
+            type: "outward",
+            entityId,
+            polymer,
+            quantity: qty,
+            rate: null,
+            reference: ref,
+            meta: vehicle
+        };
+
+        db.transactions.push(newTx);
+        saveDatabase();
+        closeModal("modal-outward");
+        document.getElementById("form-outward").reset();
+        renderAll();
+    });
+
+    // 3. Job Worker Consumption Trigger
+    document.getElementById("btn-log-consumption").addEventListener("click", () => {
+        const workerId = document.getElementById("worker-select-filter").value;
+        if (!workerId) return;
+
+        document.getElementById("consumption-worker-id").value = workerId;
+        document.getElementById("consumption-worker-display").value = getEntityName(workerId, "worker");
+
+        // Load active polymers held by worker in select
+        const workerBals = getJobWorkerBalances(workerId);
+        const selectPoly = document.getElementById("consumption-polymer");
+        selectPoly.innerHTML = "";
+        
+        db.polymers.forEach(p => {
+            const val = workerBals[p] || 0;
+            if (val > 0) {
+                selectPoly.innerHTML += `<option value="${p}">${p} (${val.toLocaleString()} kg)</option>`;
+            }
+        });
+
+        // If worker has no polymers
+        if (selectPoly.innerHTML === "") {
+            alert("This Job Worker doesn't have any polymers in custody to consume.");
+            return;
+        }
+
+        openModal("modal-consumption");
+    });
+
+    document.getElementById("consumption-polymer").addEventListener("change", updateWorkerConsumptionHint);
+
+    document.getElementById("form-consumption").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const workerId = document.getElementById("consumption-worker-id").value;
+        const date = document.getElementById("consumption-date").value;
+        const polymer = document.getElementById("consumption-polymer").value;
+        const qty = parseFloat(document.getElementById("consumption-qty").value);
+        const note = document.getElementById("consumption-note").value;
+
+        // Validation
+        const balances = getJobWorkerBalances(workerId);
+        const available = balances[polymer] || 0;
+        if (qty > available) {
+            if (!confirm(`Warning: Worker custody balance for ${polymer} is ${available} kg. Consumption entered is ${qty} kg. Proceed anyway?`)) {
+                return;
+            }
+        }
+
+        const newTx = {
+            id: "t_" + Date.now(),
+            date,
+            type: "consume",
+            entityId: workerId,
+            polymer,
+            quantity: qty,
+            rate: null,
+            reference: "CONS-" + Date.now().toString().slice(-4),
+            meta: note
+        };
+
+        db.transactions.push(newTx);
+        saveDatabase();
+        closeModal("modal-consumption");
+        document.getElementById("form-consumption").reset();
+        renderAll();
+    });
+
+    // 4. Job Worker Return Trigger
+    document.getElementById("btn-log-return").addEventListener("click", () => {
+        const workerId = document.getElementById("worker-select-filter").value;
+        if (!workerId) return;
+
+        document.getElementById("return-worker-id").value = workerId;
+        document.getElementById("return-worker-display").value = getEntityName(workerId, "worker");
+
+        // Load active polymers held by worker in select
+        const workerBals = getJobWorkerBalances(workerId);
+        const selectPoly = document.getElementById("return-polymer");
+        selectPoly.innerHTML = "";
+        
+        db.polymers.forEach(p => {
+            const val = workerBals[p] || 0;
+            if (val > 0) {
+                selectPoly.innerHTML += `<option value="${p}">${p} (${val.toLocaleString()} kg)</option>`;
+            }
+        });
+
+        // If worker has no polymers
+        if (selectPoly.innerHTML === "") {
+            alert("This Job Worker doesn't have any polymers in custody to return.");
+            return;
+        }
+
+        openModal("modal-return");
+    });
+
+    document.getElementById("return-polymer").addEventListener("change", updateWorkerReturnHint);
+
+    document.getElementById("form-return").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const workerId = document.getElementById("return-worker-id").value;
+        const date = document.getElementById("return-date").value;
+        const polymer = document.getElementById("return-polymer").value;
+        const qty = parseFloat(document.getElementById("return-qty").value);
+        const note = document.getElementById("return-note").value;
+
+        // Validation
+        const balances = getJobWorkerBalances(workerId);
+        const available = balances[polymer] || 0;
+        if (qty > available) {
+            if (!confirm(`Warning: Worker custody balance for ${polymer} is ${available} kg. Return entered is ${qty} kg. Proceed anyway?`)) {
+                return;
+            }
+        }
+
+        const newTx = {
+            id: "t_" + Date.now(),
+            date,
+            type: "return",
+            entityId: workerId,
+            polymer,
+            quantity: qty,
+            rate: null,
+            reference: "RET-" + Date.now().toString().slice(-4),
+            meta: note
+        };
+
+        db.transactions.push(newTx);
+        saveDatabase();
+        closeModal("modal-return");
+        document.getElementById("form-return").reset();
+        renderAll();
+    });
+
+    // 5. Job Worker Filter Select
+    document.getElementById("worker-select-filter").addEventListener("change", () => {
+        renderWorkersTab();
+    });
+
+    // 6. Search & Filter selectors
+    document.getElementById("search-inward").addEventListener("input", renderInwardTab);
+    const filterInwardPartner = document.getElementById("filter-inward-partner");
+    if (filterInwardPartner) {
+        filterInwardPartner.addEventListener("change", renderInwardTab);
+    }
+    const filterInwardFrom = document.getElementById("filter-inward-from");
+    const filterInwardTo = document.getElementById("filter-inward-to");
+    if (filterInwardFrom) filterInwardFrom.addEventListener("input", renderInwardTab);
+    if (filterInwardTo) filterInwardTo.addEventListener("input", renderInwardTab);
+    document.getElementById("search-outward").addEventListener("input", renderOutwardTab);
+
+    // 7. Add Entity Forms
+    
+    // Add/Edit Vendor
+    document.getElementById("form-add-vendor").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const editId = document.getElementById("vendor-edit-id").value;
+        const nameInput = document.getElementById("new-vendor-name");
+        const creditInput = document.getElementById("new-vendor-credit");
+        const name = nameInput.value.trim();
+        const credit = parseInt(creditInput.value) || null;
+        if (!name) return;
+
+        if (editId) {
+            const vendor = db.vendors.find(v => v.id === editId);
+            if (vendor) {
+                vendor.name = name;
+                vendor.creditPeriod = credit;
+            }
+            cancelVendorEdit();
+        } else {
+            const newVendor = {
+                id: "v_" + Date.now(),
+                name,
+                creditPeriod: credit
+            };
+            db.vendors.push(newVendor);
+            nameInput.value = "";
+            creditInput.value = "";
+        }
+
+        saveDatabase();
+        renderAll();
+    });
+
+    document.getElementById("btn-vendor-cancel").addEventListener("click", cancelVendorEdit);
+
+    // Add/Edit Job Worker
+    document.getElementById("form-add-worker").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const editId = document.getElementById("worker-edit-id").value;
+        const nameInput = document.getElementById("new-worker-name");
+        const addressInput = document.getElementById("new-worker-address");
+        const mobileInput = document.getElementById("new-worker-mobile");
+        const name = nameInput.value.trim();
+        const address = addressInput.value.trim();
+        const mobile = mobileInput.value.trim();
+        if (!name) return;
+
+        if (editId) {
+            const worker = db.jobWorkers.find(w => w.id === editId);
+            if (worker) {
+                worker.name = name;
+                worker.address = address;
+                worker.mobile = mobile;
+            }
+            cancelJobWorkerEdit();
+        } else {
+            const newWorker = {
+                id: "w_" + Date.now(),
+                name,
+                address,
+                mobile
+            };
+            db.jobWorkers.push(newWorker);
+            nameInput.value = "";
+            addressInput.value = "";
+            mobileInput.value = "";
+        }
+
+        saveDatabase();
+        renderAll();
+    });
+
+    document.getElementById("btn-worker-cancel").addEventListener("click", cancelJobWorkerEdit);
+
+    // Add/Edit Polymer
+    document.getElementById("form-add-polymer").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const oldName = document.getElementById("polymer-edit-old-name").value;
+        const nameInput = document.getElementById("new-polymer-name");
+        const name = nameInput.value.trim().toUpperCase();
+        if (!name) return;
+
+        if (oldName) {
+            // Edit mode
+            if (oldName !== name && db.polymers.includes(name)) {
+                alert("Polymer type name already exists.");
+                return;
+            }
+            const idx = db.polymers.indexOf(oldName);
+            if (idx !== -1) {
+                db.polymers[idx] = name;
+                
+                // Keep ledger integrity: rename polymer in all transactions
+                db.transactions.forEach(tx => {
+                    if (tx.polymer === oldName) {
+                        tx.polymer = name;
+                    }
+                });
+            }
+            cancelPolymerEdit();
+        } else {
+            // Add mode
+            if (db.polymers.includes(name)) {
+                alert("Polymer type already exists.");
+                return;
+            }
+            db.polymers.push(name);
+            nameInput.value = "";
+        }
+
+        saveDatabase();
+        renderAll();
+    });
+
+    document.getElementById("btn-polymer-cancel").addEventListener("click", cancelPolymerEdit);
+
+    // 8. Backups and Database resets
+    document.getElementById("btn-reset-data").addEventListener("click", () => {
+        if (confirm("Are you sure you want to clear all database transactions, vendors, and job workers?")) {
+            resetToDefaultDataset();
+            renderAll();
+        }
+    });
+
+    document.getElementById("btn-export-backup").addEventListener("click", () => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", "polymerflow_database_backup.json");
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+    });
+
+    // 9. Interactive Metric Card Clicks
+    const cardWarehouse = document.getElementById("card-warehouse");
+    const cardJobWorker = document.getElementById("card-jobworker");
+    const cardVendors = document.getElementById("card-vendors");
+    const cardWorkers = document.getElementById("card-workers");
+
+    const modalTitle = document.getElementById("explainer-title");
+    const modalDesc = document.getElementById("explainer-desc");
+    const modalBreakdown = document.getElementById("explainer-breakdown");
+
+    if (cardWarehouse) {
+        cardWarehouse.addEventListener("click", () => {
+            modalTitle.innerText = "🏢 Warehouse Stock details";
+            modalDesc.innerText = "This card represents the total physical polymer stock currently located inside your warehouse. These balances increase during vendor purchases (Inward) and decrease when material is dispatched to job workers (Outward).";
+            
+            // Build breakdown list
+            const bals = getWarehouseBalances();
+            let html = `<ul style="list-style: none; display: flex; flex-direction: column; gap: 8px;">`;
+            db.polymers.forEach(p => {
+                const qty = bals[p] || 0;
+                html += `<li style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-glass); padding-bottom: 6px;">
+                            <span><strong>${p}</strong></span>
+                            <span class="text-indigo"><strong>${qty.toLocaleString()} kg</strong></span>
+                         </li>`;
+            });
+            html += `</ul>`;
+            modalBreakdown.innerHTML = html;
+            openModal("modal-explainer");
+        });
+    }
+
+    if (cardJobWorker) {
+        cardJobWorker.addEventListener("click", () => {
+            modalTitle.innerText = "🏭 Job Worker Custody details";
+            modalDesc.innerText = "This card represents the sum of all polymers currently held outside by your external processors and job workers. These balances increase during dispatches (Outward) and decrease when workers consume material or return it.";
+            
+            // Build breakdown list per worker
+            let html = `<ul style="list-style: none; display: flex; flex-direction: column; gap: 10px;">`;
+            db.jobWorkers.forEach(w => {
+                const bals = getJobWorkerBalances(w.id);
+                let workerTotal = Object.values(bals).reduce((a, b) => a + b, 0);
+                
+                let details = "";
+                db.polymers.forEach(p => {
+                    const qty = bals[p] || 0;
+                    if (qty > 0) {
+                        details += `<span style="font-size: 11px; background-color: rgba(245, 158, 11, 0.1); color: var(--color-warning); padding: 2px 6px; border-radius: 4px; margin-right: 4px;">${p}: ${qty.toLocaleString()} kg</span>`;
+                    }
+                });
+
+                html += `<li style="border-bottom: 1px solid var(--border-glass); padding-bottom: 10px; display: flex; flex-direction: column; gap: 4px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 13px;">
+                                <span><strong>${w.name}</strong></span>
+                                <span class="text-warning"><strong>${workerTotal.toLocaleString()} kg</strong></span>
+                            </div>
+                            <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                                ${details || '<span style="font-size:11px; color:var(--text-secondary);">No custody stock</span>'}
+                            </div>
+                         </li>`;
+            });
+            html += `</ul>`;
+            modalBreakdown.innerHTML = html;
+            openModal("modal-explainer");
+        });
+    }
+
+    if (cardVendors) {
+        cardVendors.addEventListener("click", () => {
+            modalTitle.innerText = "🤝 Registered Vendors";
+            modalDesc.innerText = "This card shows the total count of registered vendor partners you buy polymers from. You can add, edit, or delete vendors under the Manage tab.";
+            
+            let html = `<ul style="list-style: none; display: flex; flex-direction: column; gap: 8px;">`;
+            if (db.vendors.length === 0) {
+                html += `<li class="text-muted">No vendors registered.</li>`;
+            } else {
+                db.vendors.forEach(v => {
+                    const creditVal = v.creditPeriod ? `(Credit: ${v.creditPeriod} days)` : "(No Credit info)";
+                    html += `<li style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-glass); padding-bottom: 6px; font-size: 13px;">
+                                <span><strong>${v.name}</strong></span>
+                                <span style="font-size: 11px; color: var(--text-secondary);">${creditVal}</span>
+                             </li>`;
+                });
+            }
+            html += `</ul>`;
+            modalBreakdown.innerHTML = html;
+            openModal("modal-explainer");
+        });
+    }
+
+    if (cardWorkers) {
+        cardWorkers.addEventListener("click", () => {
+            modalTitle.innerText = "🔧 Registered Job Workers";
+            modalDesc.innerText = "This card shows the total count of external job workers you send polymer materials to for molding/processing. You can manage workers under the Manage tab.";
+            
+            let html = `<ul style="list-style: none; display: flex; flex-direction: column; gap: 8px;">`;
+            if (db.jobWorkers.length === 0) {
+                html += `<li class="text-muted">No job workers registered.</li>`;
+            } else {
+                db.jobWorkers.forEach(w => {
+                    html += `<li style="border-bottom: 1px solid var(--border-glass); padding-bottom: 6px; font-size: 13px;">
+                                <strong>${w.name}</strong>
+                             </li>`;
+                });
+            }
+            html += `</ul>`;
+            modalBreakdown.innerHTML = html;
+            openModal("modal-explainer");
+        });
+    }
+
+    document.getElementById("btn-export-csv").addEventListener("click", () => {
+        // Build CSV content
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += "Date,Transaction Type,Invoice/Challan,Partner Name,Polymer,Brand,Quantity (kg),Rate (Rs/kg),Total Value (Rs),Note/Vehicle\n";
+
+        // Sort chronological
+        const sorted = [...db.transactions].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        sorted.forEach(tx => {
+            const typeText = tx.type === "inward" ? "INWARD PURCHASE" : tx.type === "outward" ? "OUTWARD DISPATCH" : tx.type === "consume" ? "WORKER CONSUMPTION" : "WORKER RETURN";
+            let entityName = tx.type === "inward" ? getEntityName(tx.entityId, "vendor") : getEntityName(tx.entityId, "worker");
+            if (tx.type === "inward" && tx.deliveredTo && tx.deliveredTo !== "warehouse") {
+                entityName += ` (Direct to ${getEntityName(tx.deliveredTo, "worker")})`;
+            }
+            const rate = tx.rate || "";
+            const total = tx.rate ? tx.rate * tx.quantity : "";
+            const reference = tx.reference || "";
+            const brand = tx.brand || "-";
+            const meta = (tx.meta || "").replace(/,/g, " "); // remove commas to prevent breaking csv
+
+            csvContent += `${tx.date},${typeText},"${reference}","${entityName}",${tx.polymer},"${brand}",${tx.quantity},${rate},${total},"${meta}"\n`;
+        });
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `polymerflow_transactions_${new Date().toISOString().split("T")[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    });
+});
+
+</script>
+</body>
+</html>
